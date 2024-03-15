@@ -51,6 +51,23 @@ class Particle {
         ctx.stroke()
         ctx.closePath()
     }
+
+    resolveCollision(collisionPoint, line) {
+        var dist = distance(this.position, particle.position)
+
+        var normal = {
+            x:(particle.position.x - this.position.x) / dist,
+            y:(particle.position.y - this.position.y) / dist,
+        }
+
+        // end = velocity − 2 * dot(velocity ⋅ normal) normal
+        var dot = 
+        this.velocity = this.velocity.x - 2 * 
+    }
+}
+
+function dot(a, b) {
+    return a.x * b.x + a.y * b.y
 }
 
 function distance(a, b) {

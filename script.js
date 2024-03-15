@@ -4,6 +4,13 @@ var ctx
 const pathLength = 20
 const amountOfParticles = 1000
 
+var lines = [
+    {p1:{x:0, y:0}, p2:{x:innerWidth, y:0}},
+    {p1:{x:innerWidth, y:0}, p2:{x:innerWidth, y:innerHeight}},
+    {p1:{x:innerWidth, y:innerHeight}, p2:{x:0, y:innerHeight}},
+    {p1:{x:0, y:innerHeight}, p2:{x:0, y:0}},
+]
+
 var particles = []
 initParticles(amountOfParticles, pathLength)
 
