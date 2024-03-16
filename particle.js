@@ -8,28 +8,40 @@ class Particle {
             x:0,
             y:0
         }
-        this.externalForces = []
         this.previousPositions = new Array(pathLength).fill({x:x, y:y})
     }
 
-    addExternalForce(position, magnitude) {
-        this.externalForces.push({position:position, magnitude:magnitude})
-    }
+    update(useGravity, friction, gravity, collisionFriction, lines = false) {
 
-    removeExternalForce(index) {
-        this.externalForces.splice(index, 1)
-    }
+        if (mouse.mouse1Down) {
+            var dist = distance(this.position, mouse.position)
 
-    update() {
-        for (var i = 0; i < this.externalForces.length; i++) {
-            var dist = distance(this.position, this.externalForces[i].position)
+            this.velocity.x += (mouse.position.x - this.position.x) / dist * 0.1
+            this.velocity.y += (mouse.position.y - this.position.y) / dist * 0.1
+        }
+        
+        this.velocity.x *= friction
+        this.velocity.y *= friction
 
-            this.velocity.x += (this.externalForces[i].position.x - this.position.x) / dist * this.externalForces[i].magnitude
-            this.velocity.y += (this.externalForces[i].position.y - this.position.y) / dist * this.externalForces[i].magnitude
+        if (useGravity) {
+            this.velocity.y += gravity
         }
 
         this.position.x += this.velocity.x
         this.position.y += this.velocity.y
+
+        var previousPosition = {x:this.position.x - this.velocity.x, y:this.position.y - this.velocity.y}
+
+        if (lines != false) {
+            for (var i = 0; i < lines.length; i++) {
+                var collision = collisionLineLine({p1:previousPosition, p2:this.position}, lines[i])
+                if (collision != false) {
+                    this.resolveCollision(collision, lines[i], previousPosition)
+                    this.velocity.x *= collisionFriction
+                    this.velocity.y *= collisionFriction
+                }
+            }
+        }
 
         this.previousPositions.pop()
         this.previousPositions.unshift({x:this.position.x, y:this.position.y})
@@ -53,16 +65,41 @@ class Particle {
     }
 
     resolveCollision(collisionPoint, line) {
-        var dist = distance(this.position, particle.position)
-
-        var normal = {
-            x:(particle.position.x - this.position.x) / dist,
-            y:(particle.position.y - this.position.y) / dist,
+        // If we define dx = x2 - x1 and dy = y2 - y1, then the normals are (-dy, dx) and (dy, -dx)
+        var normal1 = {
+            x:-(line.p2.y - line.p1.y),
+            y:(line.p2.x - line.p1.x)
         }
+        var normal1Length = Math.sqrt(normal1.x ** 2 + normal1.y ** 2)
+        normal1.x /= normal1Length
+        normal1.y /= normal1Length
 
-        // end = velocity − 2 * dot(velocity ⋅ normal) normal
-        var dot = 
-        this.velocity = this.velocity.x - 2 * 
+        var normal2 = {
+            x:(line.p2.y - line.p1.y),
+            y:-(line.p2.x - line.p1.x)
+        }
+        var normal2Length = Math.sqrt(normal2.x ** 2 + normal2.y ** 2)
+        normal2.x /= normal2Length
+        normal2.y /= normal2Length
+        
+        var normal = normal2
+
+        if (dot(this.velocity, normal1) > 0) normal = normal1
+
+        // end = velocity − 2 * dot(velocity ⋅ normal) * normal
+
+        // var velocityLength = Math.sqrt(this.velocity.x ** 2 + this.velocity.y ** 2)
+        // var normalizedVelocity = {
+        //     x:this.velocity.x / velocityLength,
+        //     y:this.velocity.y / velocityLength
+        // }
+
+        var d = dot(this.velocity, normal)
+        this.velocity.x = this.velocity.x - 2 * d * normal.x
+        this.velocity.y = this.velocity.y - 2 * d * normal.y
+
+        this.position.x = collisionPoint.x + this.velocity.x
+        this.position.y = collisionPoint.y + this.velocity.y
     }
 }
 
