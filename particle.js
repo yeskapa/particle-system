@@ -12,7 +12,7 @@ class Particle {
         this.connections = []
     }
 
-    update(useGravity, friction, gravity, collisionFriction, lines = false) {
+    update(friction, gravity) {
 
         if (mouse.mouse1Down) {
             var dist = distance(this.position, mouse.position)
@@ -24,18 +24,20 @@ class Particle {
         this.velocity.x *= friction
         this.velocity.y *= friction
 
-        if (useGravity) {
-            this.velocity.y += gravity
-        }
+        this.velocity.y += gravity
 
         for (var i = 0; i < particles.length; i++) {
-            if (this.connections.includes(i)) break
-
             var dist = distance(this.position, particles[i].position)
-            if (dist < springAttachmentDistance && dist != 0) {
+            if (dist == 0) continue
+
+            if (useSprings && !this.connections.includes(i) && dist < springAttachmentDistance) {
                 this.connections.push(i)
                 particles[i].connections.push(particles.indexOf(this))
                 springs.push(new Spring(this, particles[i], springStrength, true, springDetachDistance, springDampening, springRestLength))
+            }
+            
+            if (particleCollision && dist < particleCollisionDistance ) {
+                this.resolveParticleCollision(particles[i])
             }
         }
 
@@ -44,13 +46,13 @@ class Particle {
 
         var previousPosition = {x:this.position.x - this.velocity.x, y:this.position.y - this.velocity.y}
 
-        if (lines != false) {
+        if (lineCollision) {
             for (var i = 0; i < lines.length; i++) {
                 var collision = collisionLineLine({p1:previousPosition, p2:this.position}, lines[i])
                 if (collision != false) {
-                    this.resolveCollision(collision, lines[i], previousPosition)
-                    this.velocity.x *= collisionFriction
-                    this.velocity.y *= collisionFriction
+                    this.resolveLineCollision(collision, lines[i], previousPosition)
+                    this.velocity.x *= lineCollisionFriction
+                    this.velocity.y *= lineCollisionFriction
                 }
             }
         }
@@ -76,23 +78,41 @@ class Particle {
         ctx.closePath()
     }
 
-    resolveCollision(collisionPoint, line) {
+    resolveParticleCollision(particle) {
+        var collisionNormal = normalizeVector(this.position.x - particle.position.x, this.position.y - particle.position.y)
+
+        this.position.x = particle.position.x + collisionNormal.x * particleCollisionDistance
+        this.position.y = particle.position.y + collisionNormal.y * particleCollisionDistance
+
+        this.velocity = getReflectVector(this.velocity, collisionNormal)
+    }
+
+    resolveLineCollision(collisionPoint, line) {
         // If we define dx = x2 - x1 and dy = y2 - y1, then the normals are (-dy, dx) and (dy, -dx)
-        var normal1 = normalizeVector(-(line.p2.y - line.p1.y), (line.p2.x - line.p1.x))
-        var normal2 = normalizeVector((line.p2.y - line.p1.y), -(line.p2.x - line.p1.x))
-        
-        var normal = normal2
+        var lineNormal = normalizeVector(-(line.p2.y - line.p1.y), (line.p2.x - line.p1.x))
 
-        if (dot(this.velocity, normal1) > 0) normal = normal1
+        var sideOfLine = getSideOfLine({x:this.position.x - this.velocity.x, y:this.position.y - this.velocity.y}, line)
 
-        // end = velocity − 2 * dot(velocity ⋅ normal) * normal
+        lineNormal.x *= sideOfLine
+        lineNormal.y *= sideOfLine
 
-        var d = dot(this.velocity, normal)
-        this.velocity.x = this.velocity.x - 2 * d * normal.x
-        this.velocity.y = this.velocity.y - 2 * d * normal.y
+        this.velocity = getReflectVector(this.velocity, lineNormal)
 
-        this.position.x = collisionPoint.x + this.velocity.x
-        this.position.y = collisionPoint.y + this.velocity.y
+        var velocityNormal = normalizeVector(this.velocity.x, this.velocity.y)
+
+        this.position.x = collisionPoint.x + velocityNormal.x
+        this.position.y = collisionPoint.y + velocityNormal.y
+    }
+}
+
+function getSideOfLine(point, line) {    
+    return ((line.p2.x - line.p1.x) * (point.y - line.p1.y) - (line.p2.y - line.p1.y) * (point.x - line.p1.x)) > 0 ? 1 : -1
+}
+
+function getReflectVector(vector, normal) {
+    return {
+        x:vector.x - 2 * dot(vector, normal) * normal.x,
+        y:vector.y - 2 * dot(vector, normal) * normal.y
     }
 }
 

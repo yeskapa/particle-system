@@ -9,17 +9,23 @@ var can
 var ctx
 
 const pathLength = 0
-const amountOfParticles = 300
+const amountOfParticles = 100
 const gravity = 0.1
 const friction = 0.99
-const collisionFriction = 0.8
 const mouseStrength = 0.2
 
+const useSprings = true
 const springDetachDistance = 130
 const springAttachmentDistance = 100
 const springRestLength = 100
 const springStrength = 0.01
 const springDampening = 0
+
+const lineCollision = true
+const lineCollisionFriction = 0.8
+
+const particleCollision = true
+const particleCollisionDistance = 10
 
 const colors = {
     background: "#000",
@@ -101,6 +107,7 @@ function drawLines(color, width) {
         ctx.closePath()
     }
 }
+
 function drawNewLine() {
     if (mouse.mouse2Down) {
         ctx.strokeStyle = colors.newLine
@@ -123,7 +130,10 @@ function update() {
     ctx.fillRect(0, 0, innerWidth, innerHeight)
 
     for (var i = 0; i < particles.length; i++) {
-        particles[i].update(!mouse.mouse1Down, friction, gravity, collisionFriction, lines)
+        particles[i].update(
+            mouse.mouse1Down ? 1 : friction,
+            mouse.mouse1Down ? 0 : gravity,
+        )
         particles[i].draw(colors.particle, 2, 2, colors.path)
     }
 
