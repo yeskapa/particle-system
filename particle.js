@@ -9,6 +9,7 @@ class Particle {
             y:0
         }
         this.previousPositions = new Array(pathLength).fill({x:x, y:y})
+        this.connections = []
     }
 
     update(useGravity, friction, gravity, collisionFriction, lines = false) {
@@ -16,8 +17,8 @@ class Particle {
         if (mouse.mouse1Down) {
             var dist = distance(this.position, mouse.position)
 
-            this.velocity.x += (mouse.position.x - this.position.x) / dist * 0.1
-            this.velocity.y += (mouse.position.y - this.position.y) / dist * 0.1
+            this.velocity.x += (mouse.position.x - this.position.x) / dist * mouseStrength
+            this.velocity.y += (mouse.position.y - this.position.y) / dist * mouseStrength
         }
         
         this.velocity.x *= friction
@@ -25,6 +26,17 @@ class Particle {
 
         if (useGravity) {
             this.velocity.y += gravity
+        }
+
+        for (var i = 0; i < particles.length; i++) {
+            if (this.connections.includes(i)) break
+
+            var dist = distance(this.position, particles[i].position)
+            if (dist < springAttachmentDistance && dist != 0) {
+                this.connections.push(i)
+                particles[i].connections.push(particles.indexOf(this))
+                springs.push(new Spring(this, particles[i], springStrength, true, springDetachDistance, springDampening, springRestLength))
+            }
         }
 
         this.position.x += this.velocity.x
@@ -66,33 +78,14 @@ class Particle {
 
     resolveCollision(collisionPoint, line) {
         // If we define dx = x2 - x1 and dy = y2 - y1, then the normals are (-dy, dx) and (dy, -dx)
-        var normal1 = {
-            x:-(line.p2.y - line.p1.y),
-            y:(line.p2.x - line.p1.x)
-        }
-        var normal1Length = Math.sqrt(normal1.x ** 2 + normal1.y ** 2)
-        normal1.x /= normal1Length
-        normal1.y /= normal1Length
-
-        var normal2 = {
-            x:(line.p2.y - line.p1.y),
-            y:-(line.p2.x - line.p1.x)
-        }
-        var normal2Length = Math.sqrt(normal2.x ** 2 + normal2.y ** 2)
-        normal2.x /= normal2Length
-        normal2.y /= normal2Length
+        var normal1 = normalizeVector(-(line.p2.y - line.p1.y), (line.p2.x - line.p1.x))
+        var normal2 = normalizeVector((line.p2.y - line.p1.y), -(line.p2.x - line.p1.x))
         
         var normal = normal2
 
         if (dot(this.velocity, normal1) > 0) normal = normal1
 
         // end = velocity − 2 * dot(velocity ⋅ normal) * normal
-
-        // var velocityLength = Math.sqrt(this.velocity.x ** 2 + this.velocity.y ** 2)
-        // var normalizedVelocity = {
-        //     x:this.velocity.x / velocityLength,
-        //     y:this.velocity.y / velocityLength
-        // }
 
         var d = dot(this.velocity, normal)
         this.velocity.x = this.velocity.x - 2 * d * normal.x
@@ -103,12 +96,13 @@ class Particle {
     }
 }
 
-function dot(a, b) {
-    return a.x * b.x + a.y * b.y
+function normalizeVector(x, y) {
+    var length = Math.sqrt(x * x + y * y)
+    return { x: x / length, y: y / length }
 }
 
-function distance(a, b) {
-    return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2))
+function dot(a, b) {
+    return a.x * b.x + a.y * b.y
 }
 
 function initParticles(amount, pathLength) {

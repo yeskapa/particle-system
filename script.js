@@ -1,11 +1,33 @@
+// TODO: stop particles from going through corners of lines
+// TODO: make particles collide with eachother to avoid collapsing
+// TODO: make line placing snap to line corners
+// TODO: add sliders for variables and checkboxes for toggling features
+// TODO: make springs not able to cross lines
+// TODO: optimise particle-line collision and particle-particle spring creation
+
 var can
 var ctx
 
-const pathLength = 20
-const amountOfParticles = 10
+const pathLength = 0
+const amountOfParticles = 300
 const gravity = 0.1
-const friction = 1
+const friction = 0.99
 const collisionFriction = 0.8
+const mouseStrength = 0.2
+
+const springDetachDistance = 130
+const springAttachmentDistance = 100
+const springRestLength = 100
+const springStrength = 0.01
+const springDampening = 0
+
+const colors = {
+    background: "#000",
+    particle: "#fff",
+    path: "#ffffff33",
+    line: "#fff",
+    newLine: "#2a2a2a"
+}
 
 var lines = [
     {p1:{x:0, y:0}, p2:{x:innerWidth, y:0}},
@@ -19,6 +41,7 @@ var newLine = {
     p2:{x:0, y:0}
 }
 
+var springs = []
 var particles = []
 initParticles(amountOfParticles, pathLength)
 
@@ -80,7 +103,7 @@ function drawLines(color, width) {
 }
 function drawNewLine() {
     if (mouse.mouse2Down) {
-        ctx.strokeStyle = "#2a2a2a"
+        ctx.strokeStyle = colors.newLine
         ctx.lineWidth = 2
         ctx.beginPath()
         ctx.moveTo(newLine.p1.x, newLine.p1.y)
@@ -96,16 +119,21 @@ function resizeCanvas() {
 }
 
 function update() {
-    ctx.fillStyle = "#000"
+    ctx.fillStyle = colors.background
     ctx.fillRect(0, 0, innerWidth, innerHeight)
 
     for (var i = 0; i < particles.length; i++) {
         particles[i].update(!mouse.mouse1Down, friction, gravity, collisionFriction, lines)
-        particles[i].draw("#fff", 2, 2, "#ffffff33")
+        particles[i].draw(colors.particle, 2, 2, colors.path)
+    }
+
+    for (var i = 0; i < springs.length; i++) {
+        if (!springs[i].calculate()) continue
+        springs[i].draw()
     }
 
     drawNewLine()
-    drawLines("#fff", 2)
+    drawLines(colors.line, 1)
 
     window.requestAnimationFrame(update)
 }
