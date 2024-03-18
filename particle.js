@@ -13,6 +13,7 @@ class Particle {
     }
 
     update(friction, gravity) {
+        var previousPosition = {x:this.position.x, y:this.position.y}
 
         if (mouse.mouse1Down) {
             var dist = distance(this.position, mouse.position)
@@ -36,15 +37,24 @@ class Particle {
                 springs.push(new Spring(this, particles[i], springStrength, true, springDetachDistance, springDampening, springRestLength))
             }
             
-            if (particleCollision && dist < particleCollisionDistance ) {
-                this.resolveParticleCollision(particles[i])
+            if (particleCollision && dist < particleCollisionDistance * 2) {
+                this.resolveParticleCollision(particles[i], particleCollisionDistance, previousPosition)
+            }
+        }
+
+        for (var i = 0; i < lineIntersections.length; i++) {
+            var dist = distance(this.position, lineIntersections[i])
+            if (dist < 10) {
+                var collisionNormal = normalizeVector(this.position.x - lineIntersections[i].x, this.position.y - lineIntersections[i].y)
+                this.velocity = getReflectVector(this.velocity, collisionNormal)
+                
+                this.position.x = lineIntersections[i].x + collisionNormal.x * 10
+                this.position.y = lineIntersections[i].y + collisionNormal.y * 10
             }
         }
 
         this.position.x += this.velocity.x
         this.position.y += this.velocity.y
-
-        var previousPosition = {x:this.position.x - this.velocity.x, y:this.position.y - this.velocity.y}
 
         if (lineCollision) {
             for (var i = 0; i < lines.length; i++) {
@@ -78,30 +88,30 @@ class Particle {
         ctx.closePath()
     }
 
-    resolveParticleCollision(particle) {
+    resolveParticleCollision(particle, dist) {
         var collisionNormal = normalizeVector(this.position.x - particle.position.x, this.position.y - particle.position.y)
 
-        this.position.x = particle.position.x + collisionNormal.x * particleCollisionDistance
-        this.position.y = particle.position.y + collisionNormal.y * particleCollisionDistance
-
         this.velocity = getReflectVector(this.velocity, collisionNormal)
+        particle.velocity.x = -this.velocity.x
+        particle.velocity.y = -this.velocity.y
+        
+        this.position.x = particle.position.x + collisionNormal.x * dist * 2
+        this.position.y = particle.position.y + collisionNormal.y * dist * 2
     }
 
-    resolveLineCollision(collisionPoint, line) {
+    resolveLineCollision(collisionPoint, line, previousPosition) {
         // If we define dx = x2 - x1 and dy = y2 - y1, then the normals are (-dy, dx) and (dy, -dx)
         var lineNormal = normalizeVector(-(line.p2.y - line.p1.y), (line.p2.x - line.p1.x))
 
-        var sideOfLine = getSideOfLine({x:this.position.x - this.velocity.x, y:this.position.y - this.velocity.y}, line)
+        var sideOfLine = getSideOfLine(previousPosition, line)
 
         lineNormal.x *= sideOfLine
         lineNormal.y *= sideOfLine
 
         this.velocity = getReflectVector(this.velocity, lineNormal)
 
-        var velocityNormal = normalizeVector(this.velocity.x, this.velocity.y)
-
-        this.position.x = collisionPoint.x + velocityNormal.x
-        this.position.y = collisionPoint.y + velocityNormal.y
+        this.position.x = collisionPoint.x + lineNormal.x
+        this.position.y = collisionPoint.y + lineNormal.y
     }
 }
 

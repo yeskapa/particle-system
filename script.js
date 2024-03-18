@@ -1,12 +1,14 @@
 // TODO: stop particles from going through corners of lines
-// TODO: make particles collide with eachother to avoid collapsing
-// TODO: make line placing snap to line corners
+// TODO: make line placing snap to line points
+// TODO: make line points movable
 // TODO: add sliders for variables and checkboxes for toggling features
 // TODO: make springs not able to cross lines
 // TODO: optimise particle-line collision and particle-particle spring creation
 
 var can
 var ctx
+
+const frameRate = -1
 
 const pathLength = 0
 const amountOfParticles = 100
@@ -18,7 +20,7 @@ const useSprings = true
 const springDetachDistance = 130
 const springAttachmentDistance = 100
 const springRestLength = 100
-const springStrength = 0.01
+const springStrength = 0.001
 const springDampening = 0
 
 const lineCollision = true
@@ -41,6 +43,9 @@ var lines = [
     {p1:{x:innerWidth, y:innerHeight}, p2:{x:0, y:innerHeight}},
     {p1:{x:0, y:innerHeight}, p2:{x:0, y:0}},
 ]
+
+var lineIntersections = []
+updateLineIntersections()
 
 var newLine = {
     p1:{x:0, y:0},
@@ -87,6 +92,7 @@ addEventListener("mouseup", function(e) {
         newLine.p2.y = e.clientY
 
         lines.push({p1:{x:newLine.p1.x, y:newLine.p1.y}, p2:{x:newLine.p2.x, y:newLine.p2.y}})
+        updateLineIntersections()
         newLine = {
             p1:{x:0, y:0},
             p2:{x:0, y:0}
@@ -95,6 +101,18 @@ addEventListener("mouseup", function(e) {
         mouse.mouse2Down = false
     }
 })
+
+function updateLineIntersections() {
+    lineIntersections = []
+    for (var i = 0; i < lines.length; i++) {
+        lineIntersections.push(lines[i].p1, lines[i].p1)
+        for (var j = 0; j < lines.length; j++) {
+            if (i == j) continue
+            var intersection = collisionLineLine(lines[i], lines[j])
+            if (intersection != false) lineIntersections.push(intersection)
+        }
+    }
+}
 
 function drawLines(color, width) {
     ctx.strokeStyle = color
@@ -145,5 +163,6 @@ function update() {
     drawNewLine()
     drawLines(colors.line, 1)
 
-    window.requestAnimationFrame(update)
+    if (frameRate == false) window.requestAnimationFrame(update)
+    else setTimeout(update, 1000 / frameRate)
 }
