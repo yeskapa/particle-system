@@ -4,6 +4,7 @@
 // TODO: add sliders for variables and checkboxes for toggling features
 // TODO: make springs not able to cross lines
 // TODO: optimise particle-line collision and particle-particle spring creation
+// TODO: add a toggleable meta-ball effect to the particles
 
 var can
 var ctx
@@ -11,12 +12,12 @@ var ctx
 const frameRate = -1
 
 const pathLength = 0
-const amountOfParticles = 100
+const amountOfParticles = 200
 const gravity = 0.1
 const friction = 0.99
 const mouseStrength = 0.2
 
-const useSprings = true
+const useSprings = false
 const springDetachDistance = 130
 const springAttachmentDistance = 100
 const springRestLength = 100
@@ -149,7 +150,7 @@ function update() {
 
     for (var i = 0; i < particles.length; i++) {
         particles[i].update(
-            mouse.mouse1Down ? 1 : friction,
+            friction,
             mouse.mouse1Down ? 0 : gravity,
         )
         particles[i].draw(colors.particle, 2, 2, colors.path)

@@ -38,7 +38,7 @@ class Particle {
             }
             
             if (particleCollision && dist < particleCollisionDistance * 2) {
-                this.resolveParticleCollision(particles[i], particleCollisionDistance, previousPosition)
+                this.resolveParticleCollision(particles[i], particleCollisionDistance)
             }
         }
 
@@ -89,15 +89,43 @@ class Particle {
     }
 
     resolveParticleCollision(particle, dist) {
-        var collisionNormal = normalizeVector(this.position.x - particle.position.x, this.position.y - particle.position.y)
+        var xDiff = this.position.x + this.velocity.x - particle.position.x
+        var yDiff = this.position.y + this.velocity.y - particle.position.y
+        var angle = Math.atan2(yDiff, xDiff)
+        var speed1 = Math.sqrt(this.velocity.x * this.velocity.x + this.velocity.y * this.velocity.y)
+        var speed2 = Math.sqrt(particle.velocity.x * particle.velocity.x + particle.velocity.y * particle.velocity.y)
 
-        this.velocity = getReflectVector(this.velocity, collisionNormal)
-        particle.velocity.x = -this.velocity.x
-        particle.velocity.y = -this.velocity.y
-        
-        this.position.x = particle.position.x + collisionNormal.x * dist * 2
-        this.position.y = particle.position.y + collisionNormal.y * dist * 2
+        var direction1 = Math.atan2(this.velocity.y, this.velocity.x)
+        var direction2 = Math.atan2(particle.velocity.y, particle.velocity.x)
+
+        var newXSpeed1 = speed1 * Math.cos(direction1 - angle)
+        var newYSpeed1 = speed1 * Math.sin(direction1 - angle)
+        var newXSpeed2 = speed2 * Math.cos(direction2 - angle)
+        var newYSpeed2 = speed2 * Math.sin(direction2 - angle)
+
+        var finalXSpeed1 = ((dist - dist) * newXSpeed1 + (2 * dist) * newXSpeed2) / (dist + dist)
+        var finalXSpeed2 = ((dist - dist) * newXSpeed2 + (2 * dist) * newXSpeed1) / (dist + dist)
+
+        this.velocity.x = Math.cos(angle) * finalXSpeed1 + Math.cos(angle + Math.PI / 2) * newYSpeed1
+        this.velocity.y = Math.sin(angle) * finalXSpeed1 + Math.sin(angle + Math.PI / 2) * newYSpeed1
+        particle.velocity.x = Math.cos(angle) * finalXSpeed2 + Math.cos(angle + Math.PI / 2) * newYSpeed2
+        particle.velocity.y = Math.sin(angle) * finalXSpeed2 + Math.sin(angle + Math.PI / 2) * newYSpeed2
+
+        var d = distance(this.position, particle.position)
+        this.position.x = (this.position.x - particle.position.x) / d * (dist + dist) + particle.position.x
+        this.position.y = (this.position.y - particle.position.y) / d * (dist + dist) + particle.position.y
     }
+
+    // resolveParticleCollision(particle, dist) {
+    //     var collisionNormal = normalizeVector(this.position.x - particle.position.x, this.position.y - particle.position.y)
+
+    //     this.velocity = getReflectVector(this.velocity, collisionNormal)
+    //     particle.velocity.x = -this.velocity.x
+    //     particle.velocity.y = -this.velocity.y
+        
+    //     this.position.x = particle.position.x + collisionNormal.x * dist * 2
+    //     this.position.y = particle.position.y + collisionNormal.y * dist * 2
+    // }
 
     resolveLineCollision(collisionPoint, line, previousPosition) {
         // If we define dx = x2 - x1 and dy = y2 - y1, then the normals are (-dy, dx) and (dy, -dx)
