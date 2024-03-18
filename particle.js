@@ -31,10 +31,10 @@ class Particle {
             var dist = distance(this.position, particles[i].position)
             if (dist == 0) continue
 
-            if (useSprings && !this.connections.includes(i) && dist < springAttachmentDistance) {
+            if (useSprings && !this.connections.includes(i) && dist < springAttachDistance) {
                 this.connections.push(i)
                 particles[i].connections.push(particles.indexOf(this))
-                springs.push(new Spring(this, particles[i], springStrength, true, springDetachDistance, springDampening, springRestLength))
+                springs.push(new Spring(this, particles[i]))
             }
             
             if (particleCollision && dist < particleCollisionDistance * 2) {
@@ -115,17 +115,6 @@ class Particle {
         this.position.x = (this.position.x - particle.position.x) / d * (dist + dist) + particle.position.x
         this.position.y = (this.position.y - particle.position.y) / d * (dist + dist) + particle.position.y
     }
-
-    // resolveParticleCollision(particle, dist) {
-    //     var collisionNormal = normalizeVector(this.position.x - particle.position.x, this.position.y - particle.position.y)
-
-    //     this.velocity = getReflectVector(this.velocity, collisionNormal)
-    //     particle.velocity.x = -this.velocity.x
-    //     particle.velocity.y = -this.velocity.y
-        
-    //     this.position.x = particle.position.x + collisionNormal.x * dist * 2
-    //     this.position.y = particle.position.y + collisionNormal.y * dist * 2
-    // }
 
     resolveLineCollision(collisionPoint, line, previousPosition) {
         // If we define dx = x2 - x1 and dy = y2 - y1, then the normals are (-dy, dx) and (dy, -dx)
