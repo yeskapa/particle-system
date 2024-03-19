@@ -42,17 +42,6 @@ class Particle {
             }
         }
 
-        for (var i = 0; i < lineIntersections.length; i++) {
-            var dist = distance(this.position, lineIntersections[i])
-            if (dist < 10) {
-                var collisionNormal = normalizeVector(this.position.x - lineIntersections[i].x, this.position.y - lineIntersections[i].y)
-                this.velocity = getReflectVector(this.velocity, collisionNormal)
-                
-                this.position.x = lineIntersections[i].x + collisionNormal.x * 10
-                this.position.y = lineIntersections[i].y + collisionNormal.y * 10
-            }
-        }
-
         this.position.x += this.velocity.x
         this.position.y += this.velocity.y
 
@@ -153,6 +142,8 @@ function dot(a, b) {
 }
 
 function initParticles(amount, pathLength) {
+    springs = []
+    particles = []
     for (var i = 0; i < amount; i++) {
         particles.push(new Particle(Math.random() * innerWidth, Math.random() * innerHeight, pathLength))
     }

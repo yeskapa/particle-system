@@ -1,9 +1,10 @@
 // TODO: make line placing snap to line points
 // TODO: make line points movable
-// TODO: add sliders for variables and checkboxes for toggling features
+// TODO: add checkboxes for toggleable features
 // TODO: make springs not able to cross lines
 // TODO: optimise particle-line collision and particle-particle spring creation
 // TODO: add a toggleable meta-ball effect to the particles
+// TODO: make it GPU accelerated for performance
 
 var can
 var ctx
@@ -29,12 +30,17 @@ var lineCollisionFriction = 0.8
 var particleCollision = true
 var particleCollisionDistance = 10
 
+var showMarchingSquares = true
+var showSprings = false
+var showParticles = false
+
 const colors = {
     background: "#111",
     particle: "#fff",
     path: "#ffffff33",
     line: "#fff",
-    newLine: "#2a2a2a"
+    newLine: "#2a2a2a",
+    marchingSquares: "#fff",
 }
 
 var lines = [
@@ -43,6 +49,9 @@ var lines = [
     {p1:{x:innerWidth, y:innerHeight}, p2:{x:0, y:innerHeight}},
     {p1:{x:0, y:innerHeight}, p2:{x:0, y:0}},
 ]
+
+var marchingSquaresStrength = 500
+var marchingGrid = new MarchingSquares({x:0, y:0}, {x:innerWidth, y:innerHeight}, 100, 100)
 
 var lineIntersections = []
 updateLineIntersections()
@@ -100,8 +109,21 @@ window.onload = function() {
 }
 
 window.onresize = function() {
+    marchingGrid.init({x:0, y:0}, {x:innerWidth, y:innerHeight})
     resizeCanvas()
 }
+
+function updateMarchingSquaresGrid() {
+    for (var i = 0; i < marchingGrid.points.length; i++) {
+        var a = 0
+        for (var j = 0; j < particles.length; j++) {
+            var dist = distance(marchingGrid.points[i].position, particles[j].position)
+            a += 1 / (dist ** 2) * marchingSquaresStrength
+        }
+        marchingGrid.points[i].value = Math.min(Math.max(a, 0), 5)
+    }
+}
+
 
 function updateLineIntersections() {
     lineIntersections = []
@@ -153,16 +175,20 @@ function update() {
             friction,
             mouse.mouse1Down ? 0 : gravity,
         )
-        particles[i].draw(colors.particle, 2, 2, colors.path)
+        if (showParticles) particles[i].draw(colors.particle, 2, 2, colors.path)
     }
 
     for (var i = 0; i < springs.length; i++) {
         if (!springs[i].calculate()) continue
-        springs[i].draw()
+        if (showSprings) springs[i].draw()
     }
 
     drawNewLine()
     drawLines(colors.line, 1)
+    if (showMarchingSquares) {
+        updateMarchingSquaresGrid()
+        marchingGrid.draw(colors.marchingSquares)
+    }
 
     if (frameRate == false) window.requestAnimationFrame(update)
     else setTimeout(update, 1000 / frameRate)

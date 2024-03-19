@@ -5,6 +5,13 @@ class Spring {
     }
 
     calculate() {
+        for (var i = 0; i < lines.length; i++) {
+            var intersection = collisionLineLine({p1:this.p1.position, p2:this.p2.position}, lines[i])
+            if (intersection != false) {
+                return false
+            }
+        }
+
         var length = distance(this.p1.position, this.p2.position)
         if (length == 0) return true
 
