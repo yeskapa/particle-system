@@ -1,0 +1,55 @@
+canvas {
+    z-index: 0;
+    position: absolute;
+       border: 0px solid #0000f4;
+}
+
+body {
+    margin: 0;
+    overflow: hidden;
+}
+
+#slidersDiv {
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    width: 300px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content:space-evenly;
+    align-items: center;
+    background: #00000099;
+}
+
+.slider {
+    /* create a good looking slider */
+    -webkit-appearance: none;
+    width: 80%;
+    background: #fff;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    margin-top: -5px;
+    width: 20px;
+    height: 20px;
+    background: #000;
+    cursor: pointer;
+}
+
+    /* Styles for the slider track */
+.slider::-webkit-slider-runnable-track {
+    height: 10px;
+    cursor: pointer;
+    background: #fff; /* Grey track color */
+}
+
+.text {
+    /* using helvetica font */
+    font-family: 'Helvetica';				
+    font-size: 30px;
+    color: #fff;
+}

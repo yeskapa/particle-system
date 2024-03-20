@@ -1,9 +1,8 @@
 // TODO: make line placing snap to line points
 // TODO: make line points movable
+// TODO: make all rendering options togglable
 // TODO: add checkboxes for toggleable features
-// TODO: make springs not able to cross lines
-// TODO: optimise particle-line collision and particle-particle spring creation
-// TODO: add a toggleable meta-ball effect to the particles
+// TODO: optimise collisions and spring creation
 // TODO: make it GPU accelerated for performance
 
 var can
@@ -18,10 +17,10 @@ var friction = 0.99
 var mouseStrength = 0.2
 
 var useSprings = true
-var springAttachDistance = 100
-var springDetachOffset = 1.3
-var springRestOffset = 1
-var springStrength = 0.001
+var springAttachDistance = 49
+var springDetachOffset = 0.9
+var springRestOffset = 0.66
+var springStrength = 0.01
 var springDampening = 0
 
 var lineCollision = true
@@ -30,9 +29,9 @@ var lineCollisionFriction = 0.8
 var particleCollision = true
 var particleCollisionDistance = 10
 
-var showMarchingSquares = true
-var showSprings = false
-var showParticles = false
+var showMarchingSquares = false
+var showSprings = true
+var showParticles = true
 
 const colors = {
     background: "#111",
@@ -50,7 +49,7 @@ var lines = [
     {p1:{x:0, y:innerHeight}, p2:{x:0, y:0}},
 ]
 
-var marchingSquaresStrength = 500
+var marchingSquaresStrength = 3
 var marchingGrid = new MarchingSquares({x:0, y:0}, {x:innerWidth, y:innerHeight}, 100, 100)
 
 var lineIntersections = []
@@ -118,7 +117,7 @@ function updateMarchingSquaresGrid() {
         var a = 0
         for (var j = 0; j < particles.length; j++) {
             var dist = distance(marchingGrid.points[i].position, particles[j].position)
-            a += 1 / (dist ** 2) * marchingSquaresStrength
+            a += 1 / dist * marchingSquaresStrength
         }
         marchingGrid.points[i].value = Math.min(Math.max(a, 0), 5)
     }
