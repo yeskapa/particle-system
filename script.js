@@ -1,3 +1,4 @@
+// TODO: make line point placing not snap to same line
 // TODO: make line points movable
 // TODO: make all rendering options togglable
 // TODO: add checkboxes for toggleable features
@@ -34,6 +35,21 @@ var linePlacingSnapDistance = 20
 var showMarchingSquares = false
 var showSprings = true
 var showParticles = true
+var showVariableMenu = false
+
+var URLvariables = [
+    amountOfParticles,
+    useSprings,
+    springAttachDistance,
+    springDetachOffset,
+    springRestOffset,
+    springStrength,
+    particleCollision,
+    particleCollisionDistance,
+    showSprings,
+    showParticles,
+    showVariableMenu,
+]
 
 const colors = {
     background: "#111",
@@ -50,6 +66,22 @@ var lines = [
     {p1:{x:innerWidth, y:innerHeight}, p2:{x:0, y:innerHeight}},
     {p1:{x:0, y:innerHeight}, p2:{x:0, y:0}},
 ]
+
+// file:///C:/Users/kapam/Desktop/code/javascript/particle%20system/index.html?100?0.1?49?0.9?0.66?0.01?1?10?1?1?1
+for (var i = 1; i < window.location.href.split("?").length; i++) {
+    var value = window.location.href.split("?")[i]
+    if (i == 1) amountOfParticles = Number(value)
+    if (i == 2) useSprings = Number(value)
+    if (i == 3) springAttachDistance = Number(value)
+    if (i == 4) springDetachOffset = Number(value)
+    if (i == 5) springRestOffset = Number(value)
+    if (i == 6) springStrength = Number(value)
+    if (i == 7) particleCollision = Number(value)
+    if (i == 8) particleCollisionDistance = Number(value)
+    if (i == 9) showSprings = Number(value)
+    if (i == 10) showParticles = Number(value)
+    if (i == 11) showVariableMenu = Number(value)
+}
 
 var marchingSquaresStrength = 3
 var marchingGrid = new MarchingSquares({x:0, y:0}, {x:innerWidth, y:innerHeight}, 100, 100)
@@ -69,7 +101,8 @@ window.onload = function() {
     can = document.getElementById("canvas")
     ctx = can.getContext("2d")
 
-        
+    if (!showVariableMenu) document.getElementById("slidersDiv").remove()
+    
     can.addEventListener("mousemove", function(e) {
         mouse.position.x = e.clientX
         mouse.position.y = e.clientY
