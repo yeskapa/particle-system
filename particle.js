@@ -1,5 +1,5 @@
 class Particle {
-    constructor(x, y, pathLength) {
+    constructor(x, y) {
         this.position = {
             x:x,
             y:y
@@ -8,7 +8,6 @@ class Particle {
             x:0,
             y:0
         }
-        this.previousPositions = new Array(pathLength).fill({x:x, y:y})
         this.connections = []
     }
 
@@ -55,26 +54,14 @@ class Particle {
                 }
             }
         }
-
-        this.previousPositions.pop()
-        this.previousPositions.unshift({x:this.position.x, y:this.position.y})
     }
 
-    draw(color, radius, pathWidth = 0, pathColor = color) {
+    draw(color, radius) {
         ctx.fillStyle = color
         ctx.beginPath()
         ctx.arc(this.position.x, this.position.y, radius, 0, Math.PI * 2, false)
         ctx.closePath()
         ctx.fill()
-
-        ctx.strokeStyle = pathColor
-        ctx.lineWidth = pathWidth
-        ctx.beginPath()
-        for (var i = 0; i < this.previousPositions.length; i++) {
-            ctx.lineTo(this.previousPositions[i].x, this.previousPositions[i].y)
-        }
-        ctx.stroke()
-        ctx.closePath()
     }
 
     resolveParticleCollision(particle, dist) {
@@ -141,10 +128,10 @@ function dot(a, b) {
     return a.x * b.x + a.y * b.y
 }
 
-function initParticles(amount, pathLength) {
+function initParticles(amount) {
     springs = []
     particles = []
     for (var i = 0; i < amount; i++) {
-        particles.push(new Particle(Math.random() * innerWidth, Math.random() * innerHeight, pathLength))
+        particles.push(new Particle(Math.random() * innerWidth, Math.random() * innerHeight))
     }
 }

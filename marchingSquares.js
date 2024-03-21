@@ -1,3 +1,15 @@
+function updateMarchingSquaresGrid() {
+    for (var i = 0; i < marchingGrid.points.length; i++) {
+        var a = 0
+        for (var j = 0; j < particles.length; j++) {
+            var dist = distance(marchingGrid.points[i].position, particles[j].position)
+            a += 1 / dist * marchingSquaresStrength
+        }
+        marchingGrid.points[i].value = Math.min(Math.max(a, 0), 5)
+    }
+}
+
+
 function drawLine(p1x, p1y, p2x, p2y, color) {
     ctx.strokeStyle = color
     ctx.beginPath()

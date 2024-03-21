@@ -36,13 +36,13 @@ class Spring {
         return true
     }
 
-    draw(lineWidth, color) {
+    draw(color, lineWidth) {
         ctx.strokeStyle = color
         ctx.lineWidth = lineWidth
         ctx.beginPath()
         ctx.lineTo(this.p2.position.x, this.p2.position.y)
         ctx.lineTo(this.p1.position.x, this.p1.position.y)
-        ctx.closePath()
         ctx.stroke()
+        ctx.closePath()
     }
 }
