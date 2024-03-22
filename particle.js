@@ -41,6 +41,18 @@ class Particle {
             }
         }
 
+        for (var i = 0; i < lineIntersections.length; i++) {
+            var dist = distance(lineIntersections[i], this.position)
+            if (dist < particleCollisionDistance * 2) {
+                var collisionNormal = normalizeVector(previousPosition.x - lineIntersections[i].x, previousPosition.y - lineIntersections[i].y)
+
+                this.position.x = lineIntersections[i].x + collisionNormal.x * particleCollisionDistance * 2
+                this.position.y = lineIntersections[i].y + collisionNormal.y * particleCollisionDistance * 2
+
+                this.velocity = getReflectVector(this.velocity, collisionNormal)
+            }
+        }
+
         this.position.x += this.velocity.x
         this.position.y += this.velocity.y
 

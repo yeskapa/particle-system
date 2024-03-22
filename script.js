@@ -35,21 +35,7 @@ var linePlacingSnapDistance = 20
 var showMarchingSquares = false
 var showSprings = true
 var showParticles = true
-var showVariableMenu = false
-
-var URLvariables = [
-    amountOfParticles,
-    useSprings,
-    springAttachDistance,
-    springDetachOffset,
-    springRestOffset,
-    springStrength,
-    particleCollision,
-    particleCollisionDistance,
-    showSprings,
-    showParticles,
-    showVariableMenu,
-]
+var showVariableMenu = true
 
 const colors = {
     background: "#111",
@@ -66,6 +52,9 @@ var lines = [
     {p1:{x:innerWidth, y:innerHeight}, p2:{x:0, y:innerHeight}},
     {p1:{x:0, y:innerHeight}, p2:{x:0, y:0}},
 ]
+
+var lineIntersections = []
+updateLineIntersections()
 
 // file:///C:/Users/kapam/Desktop/code/javascript/particle%20system/index.html?100?0.1?49?0.9?0.66?0.01?1?10?1?1?1
 for (var i = 1; i < window.location.href.split("?").length; i++) {
@@ -147,6 +136,7 @@ window.onload = function() {
         else if (e.button == 2) {
             mouse.mouse2Down = false
             lines.push({p1:{x:newLine.p1.x, y:newLine.p1.y}, p2:{x:newLine.p2.x, y:newLine.p2.y}})
+            updateLineIntersections()
             newLine = {
                 p1:{x:0, y:0},
                 p2:{x:0, y:0}
@@ -164,6 +154,20 @@ window.onresize = function() {
     marchingGrid.init({x:0, y:0}, {x:innerWidth, y:innerHeight})
     can.width = innerWidth
     can.height = innerHeight
+}
+
+function updateLineIntersections() {
+    lineIntersections = []
+    for (var i = 0; i < lines.length; i++) {
+        lineIntersections.push({x:lines[i].p1.x, y:lines[i].p1.y}, {x:lines[i].p2.x, y:lines[i].p2.y})
+        for (var j = 0; j < lines.length; j++) {
+            if (i == j) continue
+            var c = collisionLineLine(lines[i], lines[j])
+            if (c != false) {
+                lineIntersections.push(c)
+            }
+        }
+    }
 }
 
 function update() {
