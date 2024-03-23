@@ -159,12 +159,11 @@ window.onresize = function() {
 function updateLineIntersections() {
     lineIntersections = []
     for (var i = 0; i < lines.length; i++) {
-        lineIntersections.push({x:lines[i].p1.x, y:lines[i].p1.y}, {x:lines[i].p2.x, y:lines[i].p2.y})
         for (var j = 0; j < lines.length; j++) {
             if (i == j) continue
             var c = collisionLineLine(lines[i], lines[j])
             if (c != false) {
-                lineIntersections.push(c)
+                if (!lineIntersections.includes(c))lineIntersections.push(c)
             }
         }
     }
